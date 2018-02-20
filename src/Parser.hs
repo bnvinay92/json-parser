@@ -43,3 +43,6 @@ satisfy pred =
       (c:cs)
         | pred c -> Just (c, cs)
       _ -> Nothing
+
+many :: Parser i o -> Parser i [o]
+many p = ((:) <$> p <*> many p) <|> pure []
