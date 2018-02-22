@@ -1,5 +1,8 @@
+{-# LANGUAGE LambdaCase #-}
+
 module Parser where
 
+import           Control.Applicative
 import           Data.Char
 
 -- A parser is a software component that takes input data (frequently text) and builds a data structure
@@ -27,7 +30,9 @@ instance Applicative (Parser i) where
             Nothing           -> Nothing
             (Just (a, rest')) -> Just (f a, rest')
 
-(<|>) = orP
+instance Alternative (Parser i) where
+  empty = Parser $ const Nothing
+  (<|>) = orP
 
 orP :: Parser i o -> Parser i o -> Parser i o
 orP p1 p2 =
@@ -38,11 +43,7 @@ orP p1 p2 =
 
 satisfy :: (i -> Bool) -> Parser [i] i
 satisfy pred =
-  Parser $ \inp ->
-    case inp of
-      (c:cs)
-        | pred c -> Just (c, cs)
-      _ -> Nothing
-
-many :: Parser i o -> Parser i [o]
-many p = ((:) <$> p <*> many p) <|> pure []
+  Parser $ \case
+    (c:cs)
+      | pred c -> Just (c, cs)
+    _ -> Nothing
